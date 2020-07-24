@@ -1,0 +1,36 @@
+{
+  "name": "nodejs-global-mentoring-program-2020",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ts-node": "ts-node src",
+    "start": "nodemon"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Terr1bus/nodejs-mentoring-2020.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Terr1bus/nodejs-mentoring-2020/issues"
+  },
+  "homepage": "https://github.com/Terr1bus/nodejs-mentoring-2020#readme",
+  "devDependencies": {
+    "@types/node": "^14.0.25",
+    "nodemon": "^2.0.4",
+    "ts-node": "^8.10.2"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "exec": "npm run ts-node",
+    "ext": "*.ts"
+  },
+  "dependencies": {
+    "typescript": "^3.9.7"
+  }
+}

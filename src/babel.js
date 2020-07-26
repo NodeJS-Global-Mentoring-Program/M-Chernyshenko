@@ -11,7 +11,7 @@ const outDir = path.resolve(distDir);
 const outFileName = inputFilename.split('.').slice(0, -1) + '.js';
 const outFilePath = path.join(outDir, outFileName);
 const transformResult = babel.transformFileSync(inputFile, {
-  presets: ['@babel/preset-typescript'],
+  presets: ['@babel/preset-typescript', '@babel/env'],
 });
 fs.writeFileSync(outFilePath, transformResult.code);
 const child = childProcess.execFile(
@@ -26,3 +26,6 @@ const child = childProcess.execFile(
 );
 child.stdout.pipe(process.stdout);
 process.stdin.pipe(child.stdin);
+child.on('close', () => {
+  process.exit();
+});

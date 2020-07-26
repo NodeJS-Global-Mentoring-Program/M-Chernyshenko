@@ -1,4 +1,4 @@
-const { EOL } = require('os');
+import { EOL } from 'os';
 const stdin = process.stdin;
 const stdout = process.stdout;
 

@@ -1,7 +1,7 @@
-const csvtojson = require('csvtojson');
-const fs = require('fs');
-const path = require('path');
-const { pipeline } = require('stream');
+import csvtojson from 'csvtojson';
+import fs from 'fs';
+import path from 'path';
+import { pipeline } from 'stream';
 
 const dirPath = path.resolve('csv');
 const csvFileName = 'nodejs-hw1-ex1.csv';

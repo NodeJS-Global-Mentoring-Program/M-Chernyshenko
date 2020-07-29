@@ -1,20 +1,11 @@
 import { User } from '../../../Models/User';
-import { users } from '../../../database';
+import { database } from '../../../database';
 
 const getAutoSuggestUsers = (limit = 10, substring = ''): User[] => {
   if (limit <= 0) {
     return [];
   }
-  const sortedUsers = users
-    .filter((user) => !user.isDeleted)
-    .sort((prev, next) => {
-      if (prev.login < next.login) {
-        return -1;
-      } else if (prev.login > next.login) {
-        return 1;
-      }
-      return 0;
-    });
+  const sortedUsers = database.users.sortBy('login');
 
   if (substring.length !== 0 && limit >= sortedUsers.length) {
     return sortedUsers.filter((user) =>

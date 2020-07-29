@@ -1,5 +1,5 @@
 import faker from 'faker';
-import { User } from '../../../Models/User';
+import { User } from '../../Models/User';
 
 const generateFakeUser = (): User => {
   const login = faker.internet.email();
@@ -13,4 +13,9 @@ const generateFakeUser = (): User => {
   return user;
 };
 
-export { generateFakeUser };
+const createUsers = (count = 10): User[] =>
+  Array.from({ length: count }).map(() => {
+    return generateFakeUser();
+  });
+
+export { createUsers };

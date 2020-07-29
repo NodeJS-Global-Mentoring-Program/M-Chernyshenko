@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { users } from '../../../database';
-import { validate } from 'uuid';
+import { database } from '../../../database';
 
 const deleteUser = (req: Request, res: Response): void => {
   const { id } = req.query;
@@ -8,9 +7,7 @@ const deleteUser = (req: Request, res: Response): void => {
     res.status(400).json({ error: 'user id was not provided' });
     return;
   }
-  const desiredUser = users
-    .filter((user) => !user.isDeleted && validate(id))
-    .find((user) => user.id === id);
+  const desiredUser = database.users.findBy('id', id);
   if (desiredUser === undefined) {
     res.status(410);
   } else {

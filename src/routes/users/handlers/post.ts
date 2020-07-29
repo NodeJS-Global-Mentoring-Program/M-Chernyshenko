@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 import Ajv from 'ajv';
-import { users } from '../../../database';
-import { User } from '../../../Models/User';
 import { formatErrors } from '../../helpers';
+import { database } from '../../../database';
 
 interface CreateUserRequest extends Request {
   body: {
@@ -41,12 +40,11 @@ const createUser = (req: CreateUserRequest, res: Response): void => {
     res.status(400).json(formatErrors(validate.errors));
     return;
   }
-  if (users.some((user) => user.login === login)) {
+  if (database.users.checkLoginDuplicate(login)) {
     res.status(400).json({ error: 'User with this login already exist' });
     return;
   }
-  const newUser = new User(login.trim(), password.trim(), age);
-  users.push(newUser);
+  const newUser = database.users.addUser({ age, login, password });
   res.json({ user: newUser.toApi() });
 };
 

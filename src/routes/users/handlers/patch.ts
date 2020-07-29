@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { validate } from 'uuid';
-import { users } from '../../../database';
+import { database } from '../../../database';
+import { User } from '../../../Models/User';
 
 interface UpdateUserRequest extends Request {
   body: {
@@ -13,13 +13,11 @@ interface UpdateUserRequest extends Request {
 
 const updateUser = (req: UpdateUserRequest, res: Response): void => {
   const { age, login, password, id } = req.body;
-  if (typeof id !== 'string' || !validate(id)) {
-    res.status(400).json({ error: 'invalid id' });
-    return;
-  }
-  const desiredUser = users.find((user) => !user.isDeleted && user.id === id);
-  if (desiredUser === undefined) {
-    res.status(400).json({ error: `user with id ${id} not found` });
+  let desiredUser: User;
+  try {
+    desiredUser = database.users.findBy('id', id);
+  } catch (e) {
+    res.status(400).json({ error: e });
     return;
   }
   if (typeof age === 'number') {

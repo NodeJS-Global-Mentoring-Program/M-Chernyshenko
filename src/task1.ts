@@ -5,6 +5,9 @@ const stdout = process.stdout;
 stdout.write(
   'Print anything and it will be reversed. Print "exit" for program stop.\n'
 );
+stdin.on('error', (err) => {
+  console.error(err.message);
+});
 const onMessage = (data: Buffer): void => {
   const message = data.toString().trim();
   if (message.length === 0) {

@@ -4,11 +4,11 @@ import path from 'path';
 import { pipeline } from 'stream';
 
 const dirPath = path.resolve('csv');
-const csvFileName = 'nodejs-hw1-ex1.csv';
-const jsonFileName = 'nodejs-hw1-ex1.txt';
+const inputFileName = 'nodejs-hw1-ex1.csv';
+const outputFileName = 'nodejs-hw1-ex1.txt';
 
-const readStream = fs.createReadStream(path.join(dirPath, csvFileName));
-const writeStream = fs.createWriteStream(path.join(dirPath, jsonFileName));
+const readStream = fs.createReadStream(path.join(dirPath, inputFileName));
+const writeStream = fs.createWriteStream(path.join(dirPath, outputFileName));
 
 const onError = (error: NodeJS.ErrnoException | null): void => {
   if (error) {

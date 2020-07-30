@@ -18,8 +18,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc --build",
-    "nodemon": "nodemon",
-    "ts-node": "ts-node"
+    "nodemon": "nodemon"
   },
   "repository": {
     "type": "git",
@@ -44,6 +43,6 @@
       "src"
     ],
     "ext": "*.ts",
-    "exec": "ts-node src/index.ts"
+    "exec": "ts-node --files src/index.ts"
   }
 }

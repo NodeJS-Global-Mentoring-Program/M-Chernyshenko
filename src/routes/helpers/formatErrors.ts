@@ -11,10 +11,11 @@ const formatErrors = (
   if (errors === undefined || errors === null) {
     throw new Error('Errors not found');
   }
-  return errors.map((error) => ({
+  const apiErrors = errors.map((error) => ({
     field: error.dataPath,
     message: error.message,
   }));
+  return apiErrors;
 };
 
 export { formatErrors };

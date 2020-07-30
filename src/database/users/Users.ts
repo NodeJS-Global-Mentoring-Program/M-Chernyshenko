@@ -2,7 +2,7 @@ import { User } from '../../Models/User';
 import { validate } from 'uuid';
 import { UserDto } from '../../types/DTO/UserDto';
 
-interface UserData {
+export interface UserData {
   login: string;
   age: number;
   password: string;

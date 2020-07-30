@@ -1,5 +1,6 @@
 import { v1 } from 'uuid';
 import { UserDto } from '../types/DTO/UserDto';
+import { UserData } from '../database/users/Users';
 
 class User {
   private _isDeleted = false;
@@ -41,6 +42,20 @@ class User {
 
   public delete(): void {
     this._isDeleted = true;
+  }
+
+  public update(userData: Partial<UserData>): User {
+    const { age, login, password } = userData;
+    if (typeof age === 'number') {
+      this._age = age;
+    }
+    if (typeof login === 'string') {
+      this._login = login;
+    }
+    if (typeof password === 'string') {
+      this._password = password;
+    }
+    return this;
   }
 
   public toApi(): UserDto {

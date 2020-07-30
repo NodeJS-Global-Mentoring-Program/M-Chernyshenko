@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import Ajv from 'ajv';
 import { formatErrors } from '../../helpers';
 import { database } from '../../../database';
+import { ajv } from '../../../utils/ajv';
+import { ajvUserSchema } from './utils';
 
 interface CreateUserRequest extends Request {
   body: {
@@ -11,25 +12,10 @@ interface CreateUserRequest extends Request {
   };
 }
 
-const ajv = new Ajv();
 const validationSchema = {
   type: 'object',
   required: ['age', 'login', 'password'],
-  properties: {
-    age: {
-      type: 'integer',
-      minimum: 4,
-      maximum: 130,
-    },
-    login: {
-      type: 'string',
-      format: 'email',
-    },
-    password: {
-      type: 'string',
-      pattern: '[\\d]+[\\w]+',
-    },
-  },
+  properties: ajvUserSchema,
 };
 const validate = ajv.compile(validationSchema);
 
@@ -37,7 +23,8 @@ const createUser = (req: CreateUserRequest, res: Response): void => {
   const { age, login, password } = req.body;
   const validationResult = validate({ age, login, password });
   if (validationResult === false) {
-    res.status(400).json(formatErrors(validate.errors));
+    const errors = formatErrors(validate.errors);
+    res.status(400).json({ errors });
     return;
   }
   if (database.users.checkLoginDuplicate(login)) {

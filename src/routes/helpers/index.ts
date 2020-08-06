@@ -1,1 +1,1 @@
-export { formatErrors } from './formatErrors';
+export { createRequestValidator } from './validator';

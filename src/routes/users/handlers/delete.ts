@@ -1,23 +1,16 @@
 import { Request, Response } from 'express';
 import { database } from '../../../database';
 import { ajvValidateId } from './utils';
-import { ajv } from '../../../utils/ajv';
-import { formatErrors } from '../../helpers';
+import { createRequestValidator } from '../../helpers';
 
 const schema = {
   id: ajvValidateId,
 };
 
-const validate = ajv.compile(schema);
+export const deleteUserValidation = createRequestValidator(schema, false);
 
 const deleteUser = (req: Request, res: Response): void => {
-  const { id } = req.query;
-  const validationResult = validate(id);
-  if (validationResult === false || typeof id !== 'string') {
-    const errors = formatErrors(validate.errors);
-    res.status(400).json({ errors });
-    return;
-  }
+  const id = req.query.id as string;
   const desiredUser = database.users.findBy('id', id);
   if (desiredUser === undefined) {
     res.status(410);

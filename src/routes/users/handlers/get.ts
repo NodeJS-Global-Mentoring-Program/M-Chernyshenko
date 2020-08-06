@@ -1,8 +1,12 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { getAutoSuggestUsers } from '../helpers';
 
-const getUsers = (req: Request, res: Response): void => {
-  const { limit, loginSubstring } = req.query;
+export const receiveUserValidation = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { limit } = req.query;
   if (
     limit !== undefined &&
     (typeof limit !== 'string' || isNaN(parseInt(limit, 10)))
@@ -10,6 +14,11 @@ const getUsers = (req: Request, res: Response): void => {
     res.status(400).json({ error: "'limit' have wrong format" });
     return;
   }
+  next();
+};
+
+export const getUsers = (req: Request, res: Response): void => {
+  const { limit, loginSubstring } = req.query;
   const suggestedUsers = getAutoSuggestUsers(
     typeof limit === 'string' && !isNaN(parseInt(limit, 10))
       ? parseInt(limit, 10)
@@ -23,5 +32,3 @@ const getUsers = (req: Request, res: Response): void => {
     users: usersForApi,
   });
 };
-
-export { getUsers };

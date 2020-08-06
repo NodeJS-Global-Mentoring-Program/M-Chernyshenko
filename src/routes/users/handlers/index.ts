@@ -1,4 +1,4 @@
-export { getUsers } from './get';
-export { createUser } from './post';
-export { updateUser } from './patch';
-export { deleteUser } from './delete';
+export { getUsers, receiveUserValidation } from './get';
+export { createUser, createUserValidation } from './post';
+export { updateUser, updateUserValidation } from './patch';
+export { deleteUser, deleteUserValidation } from './delete';

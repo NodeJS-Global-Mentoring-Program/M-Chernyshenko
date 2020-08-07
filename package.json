@@ -36,6 +36,7 @@
     "express-winston": "^4.0.5",
     "faker": "^4.1.0",
     "pg": "^8.3.0",
+    "pg-hstore": "^2.3.3",
     "sequelize": "^6.3.4",
     "uuid": "^8.3.0",
     "winston": "^3.3.3"

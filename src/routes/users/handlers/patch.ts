@@ -30,9 +30,8 @@ export const updateUser = (req: UpdateUserRequest, res: Response): void => {
   try {
     desiredUser = database.users.findBy('id', id);
     desiredUser = desiredUser.update({ age, login, password });
+    res.status(200).json({ user: desiredUser.toApi() });
   } catch (e) {
     res.status(400).json({ error: e });
-    return;
   }
-  res.status(200).json({ user: desiredUser.toApi() });
 };

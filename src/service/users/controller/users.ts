@@ -1,14 +1,11 @@
 import { Router } from 'express';
 import {
-  getUsers,
-  createUser,
-  updateUser,
-  deleteUser,
   receiveUserValidation,
   createUserValidation,
   updateUserValidation,
   deleteUserValidation,
-} from './handlers';
+} from '../validation';
+import { getUsers, createUser, updateUser, deleteUser } from '../api';
 
 const router = Router();
 

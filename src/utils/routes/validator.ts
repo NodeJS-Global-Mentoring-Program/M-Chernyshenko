@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { ajv } from '../../utils/ajv';
+import { ajv } from './ajv';
 import { formatErrors } from './formatErrors';
 
 type AnyRecord = Record<string, any>;

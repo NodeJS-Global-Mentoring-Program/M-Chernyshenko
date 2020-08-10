@@ -1,7 +1,7 @@
 import express from 'express';
 import winston from 'winston';
 import expressWinston from 'express-winston';
-import { userRouter } from './routes';
+import { userRouter } from './service';
 
 const port = process.env.PORT || 3000;
 

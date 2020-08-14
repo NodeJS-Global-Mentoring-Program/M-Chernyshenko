@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { database } from '../../../database';
 import { getAutoSuggestUsers } from '../controller/helpers';
-import { User } from '../../../Models/User';
+import { User } from '../../../../models/User';
 
 export const deleteUser = (req: Request, res: Response): void => {
   const id = req.query.id as string;

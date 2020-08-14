@@ -1,4 +1,4 @@
-import { User } from '../../Models/User';
+import { User } from '../../../models/User';
 import { validate } from 'uuid';
 import { UserDto } from '../../types/DTO/UserDto';
 

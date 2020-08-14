@@ -12,6 +12,10 @@ class DBConnection {
   public static getInstance(): Sequelize {
     return this.connection;
   }
+
+  public static async close(): Promise<void> {
+    this.connection.close();
+  }
 }
 
-export const dbConnection = DBConnection.getInstance();
+export { DBConnection };

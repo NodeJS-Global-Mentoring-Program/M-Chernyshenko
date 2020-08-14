@@ -1,5 +1,5 @@
 import faker from 'faker';
-import { User } from '../../Models/User';
+import { User } from '../../../models/User';
 
 const generateFakeUser = (): User => {
   const login = faker.internet.email();

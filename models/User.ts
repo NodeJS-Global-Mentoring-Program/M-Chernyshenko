@@ -1,23 +1,16 @@
-import { v1 } from 'uuid';
-import { UserDto } from '../types/DTO/UserDto';
-import { UserData } from '../database/users/Users';
+import { UserDto } from '../src/types/DTO/UserDto';
+import { UserData } from '../src/database/users/Users';
 
 class User {
   private _isDeleted = false;
   private _login: string;
   private _age: number;
   private _password: string;
-  private _id: string;
 
   constructor(login: string, password: string, age: number) {
     this._age = age;
     this._login = login;
     this._password = password;
-    this._id = v1();
-  }
-
-  public get id(): string {
-    return this._id;
   }
 
   public get login(): string {
@@ -61,7 +54,6 @@ class User {
   public toApi(): UserDto {
     return {
       login: this._login,
-      id: this._id,
       age: this._age,
       isDeleted: this._isDeleted,
       password: this._password,

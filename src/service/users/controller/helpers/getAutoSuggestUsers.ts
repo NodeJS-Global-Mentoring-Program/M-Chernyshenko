@@ -1,5 +1,5 @@
 import { database } from '../../../../database';
-import { User } from '../../../../Models/User';
+import { User } from '../../../../../models/User';
 
 const getAutoSuggestUsers = (limit = 10, substring = ''): User[] => {
   if (limit <= 0) {

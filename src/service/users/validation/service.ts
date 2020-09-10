@@ -14,7 +14,7 @@ const validationSchema = {
   properties: ajvUserSchema,
 };
 
-export const createUserValidation = createRequestValidator(validationSchema);
+export const postUserValidation = createRequestValidator(validationSchema);
 
 const updateSchema = {
   type: 'object',
@@ -25,14 +25,14 @@ const updateSchema = {
   },
 };
 
-export const updateUserValidation = createRequestValidator(updateSchema);
+export const patchUserValidation = createRequestValidator(updateSchema);
 
-export const receiveUserValidation = (
+export const getUsersValidation = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-  const { limit } = req.query;
+  const { limit, findDeleted } = req.query;
   if (
     limit !== undefined &&
     (typeof limit !== 'string' || isNaN(parseInt(limit, 10)))
@@ -40,5 +40,11 @@ export const receiveUserValidation = (
     res.status(400).json({ error: "'limit' have wrong format" });
     return;
   }
-  next();
+  if (
+    findDeleted !== undefined &&
+    (typeof findDeleted !== 'string' || !['0', '1'].includes(findDeleted))
+  ) {
+    res.status(400).json({ error: "'findDeleted' may be '0' or '1'" });
+  }
+  return next();
 };

@@ -5,7 +5,7 @@ interface ApiValidationError {
   message?: string;
 }
 
-const formatErrors = (
+const formatValidationErrors = (
   errors: ErrorObject[] | null | undefined
 ): ApiValidationError[] => {
   if (errors === undefined || errors === null) {
@@ -18,4 +18,4 @@ const formatErrors = (
   return apiErrors;
 };
 
-export { formatErrors };
+export { formatValidationErrors as formatErrors };

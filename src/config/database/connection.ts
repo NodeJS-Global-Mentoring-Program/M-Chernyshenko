@@ -1,19 +1,22 @@
 import { Sequelize } from 'sequelize';
 
-const { DB, DB_USERNAME, DB_PASSWORD, DB_HOST } = process.env;
-
 class DBConnection {
-  private static connection = new Sequelize(
-    `postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/${DB}`
-  );
+  private static connection: Sequelize | null = null;
 
   private constructor() {}
 
   public static getInstance(): Sequelize {
+    const { DB_URL } = process.env;
+    if (this.connection === null) {
+      this.connection = new Sequelize(DB_URL, { dialect: 'postgres' });
+    }
     return this.connection;
   }
 
   public static async close(): Promise<void> {
+    if (this.connection === null) {
+      throw new Error('Connection not established');
+    }
     this.connection.close();
   }
 }

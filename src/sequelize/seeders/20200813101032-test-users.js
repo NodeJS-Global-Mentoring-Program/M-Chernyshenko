@@ -1,8 +1,9 @@
 'use strict';
 
-import faker from 'faker';
+const faker = require('faker');
+const { v4 } = require('uuid');
 
-const generateFakeUser = (): User => {
+const generateFakeUser = () => {
   const login = faker.internet.email();
   const password = faker.internet.password();
   const age = faker.random.number({
@@ -10,21 +11,29 @@ const generateFakeUser = (): User => {
     max: 80,
   });
 
-  const user = new User(login, password, age);
+  const now = new Date();
+  const user = {
+    login,
+    password,
+    age,
+    isDeleted: false,
+    user_id: v4(),
+    createdAt: now,
+    updatedAt: now,
+  };
   return user;
 };
 
-const createUsers = (count = 10): User[] =>
+const createUsers = (count = 10) =>
   Array.from({ length: count }).map(() => {
     return generateFakeUser();
   });
 
-export { createUsers };
-
+const testUsers = createUsers();
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const testUsers = 
+    await queryInterface.bulkInsert('users', testUsers);
     /**
      * Add seed commands here.
      *
@@ -33,7 +42,7 @@ module.exports = {
      *   name: 'John Doe',
      *   isBetaMember: false
      * }], {});
-    */
+     */
   },
 
   down: async (queryInterface, Sequelize) => {
@@ -43,5 +52,5 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-  }
+  },
 };

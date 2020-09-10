@@ -1,19 +1,20 @@
 import { Router } from 'express';
 import {
-  receiveUserValidation,
-  createUserValidation,
-  updateUserValidation,
+  getUsersValidation,
+  postUserValidation,
+  patchUserValidation,
   deleteUserValidation,
 } from '../validation';
 import { getUsers, createUser, updateUser, deleteUser } from '../api';
+import { handleMiddlewares } from '../../../utils/routes';
 
 const router = Router();
 
 router
   .route('/')
-  .get(receiveUserValidation, getUsers)
-  .post(createUserValidation, createUser)
-  .patch(updateUserValidation, updateUser)
-  .delete(deleteUserValidation, deleteUser);
+  .get(handleMiddlewares([getUsersValidation, getUsers]))
+  .post(handleMiddlewares([postUserValidation, createUser]))
+  .patch(handleMiddlewares([patchUserValidation, updateUser]))
+  .delete(handleMiddlewares([deleteUserValidation, deleteUser]));
 
 export { router as userRouter };

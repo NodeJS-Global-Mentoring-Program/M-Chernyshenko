@@ -19,7 +19,7 @@ export const ajvUserSchema = {
   },
   password: {
     type: 'string',
-    minLength: 4,
+    minLength: 8,
     validateString: {
       errorMessage: 'password must contain at least one digit and one letter',
       func: validatePassword,

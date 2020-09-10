@@ -1,33 +1,43 @@
-import { Request, Response } from 'express';
-import { database } from '../../../database';
-import { getAutoSuggestUsers } from '../controller/helpers';
-import { User } from '../../../../models/User';
+import { Request, Response, NextFunction } from 'express';
+import { UserRepository, SequelizeUserModel, UserMapper } from '../data-access';
+import { User } from '../User';
 
-export const deleteUser = (req: Request, res: Response): void => {
+const userRepository = new UserRepository(SequelizeUserModel, new UserMapper());
+
+export const deleteUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const id = req.query.id as string;
-  const desiredUser = database.users.findBy('id', id);
-  if (desiredUser === undefined) {
-    res.status(410);
-  } else {
-    desiredUser.delete();
+  try {
+    await userRepository.delete(id);
     res.status(204);
+  } catch {
+    res.status(410);
   }
   res.send();
 };
 
-export const getUsers = (req: Request, res: Response): void => {
-  const { limit, loginSubstring } = req.query;
-  const suggestedUsers = getAutoSuggestUsers(
-    typeof limit === 'string' && !isNaN(parseInt(limit, 10))
+export const getUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { limit, loginSubstring, findDeleted } = req.query;
+  const _limit =
+    typeof limit === 'string' && !Number.isNaN(parseInt(limit, 10))
       ? parseInt(limit, 10)
-      : undefined,
-    typeof loginSubstring === 'string'
-      ? loginSubstring.toLowerCase()
-      : undefined
+      : undefined;
+  const _loginSubstring =
+    typeof loginSubstring === 'string' ? loginSubstring : undefined;
+  const _findDeleted = typeof findDeleted === 'string' && findDeleted === '1';
+  const suggestedUsers = await userRepository.getAutoSuggestUsers(
+    _limit,
+    _loginSubstring,
+    _findDeleted
   );
-  const usersForApi = suggestedUsers.map((user) => user.toApi());
   res.json({
-    users: usersForApi,
+    users: suggestedUsers,
   });
 };
 
@@ -40,13 +50,18 @@ interface UpdateUserRequest extends Request {
   };
 }
 
-export const updateUser = (req: UpdateUserRequest, res: Response): void => {
+export const updateUser = async (
+  req: UpdateUserRequest,
+  res: Response
+): Promise<void> => {
   const { age, login, password, id } = req.body;
-  let desiredUser: User;
   try {
-    desiredUser = database.users.findBy('id', id);
-    desiredUser = desiredUser.update({ age, login, password });
-    res.status(200).json({ user: desiredUser.toApi() });
+    const desiredUser = await userRepository.update(id, {
+      age,
+      login,
+      password,
+    });
+    res.status(200).json({ user: desiredUser });
   } catch (e) {
     res.status(400).json({ error: e });
   }
@@ -60,12 +75,12 @@ interface CreateUserRequest extends Request {
   };
 }
 
-export const createUser = (req: CreateUserRequest, res: Response): void => {
+export const createUser = async (
+  req: CreateUserRequest,
+  res: Response
+): Promise<void> => {
   const { age, login, password } = req.body;
-  if (database.users.checkLoginDuplicate(login)) {
-    res.status(400).json({ error: 'User with this login already exist' });
-    return;
-  }
-  const newUser = database.users.addUser({ age, login, password });
-  res.json({ user: newUser.toApi() });
+  const user = new User(login, password, age);
+  const newUser = await userRepository.create(user.toEntity());
+  res.json({ user: newUser });
 };

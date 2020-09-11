@@ -80,7 +80,7 @@ export const createUser = async (
   res: Response
 ): Promise<void> => {
   const { age, login, password } = req.body;
-  const user = new User(login, password, age);
+  const user = new User({ login, password, age });
   const newUser = await userRepository.create(user.toEntity());
   res.json({ user: newUser });
 };

@@ -1,6 +1,8 @@
 import { v4 } from 'uuid';
 import { UserDto } from './types';
 
+type UserDataForCreate = Required<Pick<UserDto, 'age' | 'login' | 'password'>>;
+
 class User implements UserDto {
   private _age: number;
   private _login: string;
@@ -8,10 +10,10 @@ class User implements UserDto {
   private _isDeleted = false;
   private _userId = v4();
 
-  constructor(login: string, password: string, age: number) {
-    this._age = age;
-    this._login = login;
-    this._password = password;
+  constructor(userData: UserDataForCreate) {
+    this._age = userData.age;
+    this._login = userData.login;
+    this._password = userData.password;
   }
 
   public get user_id(): string {

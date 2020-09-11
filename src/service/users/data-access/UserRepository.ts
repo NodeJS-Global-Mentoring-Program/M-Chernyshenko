@@ -1,4 +1,5 @@
 import { Op } from 'sequelize';
+import crypto from 'crypto';
 
 import { SequelizeUserModel } from './SequelizeUserModel';
 import { UserDto } from '../types';
@@ -18,8 +19,37 @@ class UserRepository {
   }
 
   public async create(user: Required<UserDto>): Promise<UserDto> {
-    const createdUser = await this.UserModel.create(user);
+    if (this.isLoginDuplicate(user.login)) {
+      throw new Error('User already exist');
+    }
+    const encryptedPassword = crypto
+      .createHmac('sha512', 'someSalt')
+      .update(user.password)
+      .digest('hex');
+    console.log(encryptedPassword);
+    const createdUser = await this.UserModel.create({
+      ...user,
+      password: encryptedPassword,
+    });
     return this.userMapper.toDto(createdUser);
+  }
+
+  public async findById(
+    id: string,
+    isDeleted = false
+  ): Promise<UserDto | null> {
+    const desiredUser = await this.UserModel.findOne({
+      where: {
+        user_id: id,
+        isDeleted,
+      },
+    });
+
+    if (desiredUser === null) {
+      return null;
+    }
+
+    return this.userMapper.toDto(desiredUser);
   }
 
   public async findBy<K extends keyof UserDto>(
@@ -48,7 +78,7 @@ class UserRepository {
       where: { user_id: id },
     });
     if (desiredUser === null) {
-      throw new Error(`user with id: ${id} not found`);
+      throw new Error(`Гser with id: ${id} not found`);
     }
     const { age, login, password } = userData;
     if (age !== undefined) {
@@ -62,24 +92,6 @@ class UserRepository {
     }
     const savedUser = await desiredUser.save();
     return this.userMapper.toDto(savedUser);
-  }
-
-  public async findById(
-    id: string,
-    isDeleted = false
-  ): Promise<UserDto | null> {
-    const desiredUser = await this.UserModel.findOne({
-      where: {
-        user_id: id,
-        isDeleted,
-      },
-    });
-
-    if (desiredUser === null) {
-      return null;
-    }
-
-    return this.userMapper.toDto(desiredUser);
   }
 
   public async delete(id: string): Promise<string> {
@@ -122,6 +134,11 @@ class UserRepository {
     if (typeof id !== 'string' || !validate(id)) {
       throw new Error(`id ${id} not valid`);
     }
+  }
+
+  private async isLoginDuplicate(login: string): Promise<boolean> {
+    const user = await this.UserModel.findOne({ where: { login } });
+    return user !== null;
   }
 }
 

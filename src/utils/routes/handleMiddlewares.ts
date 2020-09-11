@@ -16,7 +16,7 @@ export const handleMiddlewares = (middlewares: Middleware[]): Middleware[] => {
         // return next();
       } catch (e) {
         logger.log(e);
-        res.status(500).json({ error: e });
+        res.status(500).json({ error: e.message });
         return next('error');
       }
     };

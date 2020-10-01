@@ -1,22 +1,22 @@
 import { IBaseMapper } from '../../types';
 import { UserDto } from '../types';
-import { SequelizeUserModel } from './SequelizeUserModel';
+import { UserModel } from './UserModel';
 
-class UserMapper implements IBaseMapper<UserDto, SequelizeUserModel> {
-  toEntity(dto: Required<UserDto>): SequelizeUserModel {
-    const { age, isDeleted, login, user_id, password } = dto;
-    const entity = new SequelizeUserModel({
+class UserMapper implements IBaseMapper<UserDto, UserModel> {
+  toEntity(dto: Required<UserDto>): UserModel {
+    const { age, isDeleted, login, uuid: user_id, password } = dto;
+    const entity = new UserModel({
       age,
       isDeleted,
       login,
       password,
-      user_id,
+      uuid: user_id,
     });
     return entity;
   }
-  toDto(entity: SequelizeUserModel): UserDto {
-    const { age, isDeleted, login, user_id } = entity;
-    return { age, isDeleted, login, user_id };
+  toDto(entity: UserModel): UserDto {
+    const { age, isDeleted, login, uuid: user_id } = entity;
+    return { age, isDeleted, login, uuid: user_id };
   }
 }
 

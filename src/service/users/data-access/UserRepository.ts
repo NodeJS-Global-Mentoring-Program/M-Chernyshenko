@@ -1,26 +1,32 @@
 import { Op } from 'sequelize';
 import crypto from 'crypto';
 
-import { SequelizeUserModel } from './SequelizeUserModel';
+import { UserModel } from './UserModel';
 import { UserDto } from '../types';
-import { validate } from 'uuid';
-import { IBaseMapper } from '../../types';
+import { BaseRepository } from '../../BaseRepository';
+import { GroupRepository } from '../../Groups/api/GroupRepository';
+import { GroupModel } from '../../Groups/data-access';
 
-class UserRepository {
-  private userMapper: IBaseMapper<UserDto, SequelizeUserModel>;
-  private UserModel: typeof SequelizeUserModel;
+const userNotFoundMessage = 'User not found';
 
-  constructor(
-    userModel: typeof SequelizeUserModel,
-    userMapper: IBaseMapper<UserDto, SequelizeUserModel>
-  ) {
-    this.userMapper = userMapper;
+type UpdateUserData = Partial<UserDto>;
+
+type CreateUserData = Required<
+  Pick<UserDto, 'age' | 'login' | 'password' | 'uuid'>
+> &
+  Partial<Pick<UserDto, 'groups'>>;
+
+class UserRepository extends BaseRepository<UserModel> {
+  private UserModel: typeof UserModel;
+
+  constructor(userModel: typeof UserModel) {
+    super();
     this.UserModel = userModel;
   }
 
-  public async create(user: Required<UserDto>): Promise<UserDto> {
+  public async create(user: CreateUserData): Promise<UserModel> {
     if (this.isLoginDuplicate(user.login)) {
-      throw new Error('User already exist');
+      this.throwError('User already exist');
     }
     const encryptedPassword = crypto
       .createHmac('sha512', 'someSalt')
@@ -31,16 +37,16 @@ class UserRepository {
       ...user,
       password: encryptedPassword,
     });
-    return this.userMapper.toDto(createdUser);
+    return createdUser;
   }
 
   public async findById(
     id: string,
     isDeleted = false
-  ): Promise<UserDto | null> {
+  ): Promise<UserModel | null> {
     const desiredUser = await this.UserModel.findOne({
       where: {
-        user_id: id,
+        uuid: id,
         isDeleted,
       },
     });
@@ -49,15 +55,15 @@ class UserRepository {
       return null;
     }
 
-    return this.userMapper.toDto(desiredUser);
+    return desiredUser;
   }
 
   public async findBy<K extends keyof UserDto>(
     key: K,
     value: ValueOf<UserDto>,
     isDeleted = false
-  ): Promise<UserDto[]> {
-    if (key === 'user_id') {
+  ): Promise<UserModel[]> {
+    if (key === 'uuid') {
       this.validateId(value);
     }
 
@@ -67,20 +73,20 @@ class UserRepository {
         isDeleted,
       },
     });
-    return desiredUsers.map((user) => this.userMapper.toDto(user));
+    return desiredUsers;
   }
 
   public async update(
     id: string,
-    userData: Partial<UserDto>
-  ): Promise<UserDto> {
+    userData: UpdateUserData
+  ): Promise<UserModel> {
     const desiredUser = await this.UserModel.findOne({
-      where: { user_id: id },
+      where: { uuid: id },
     });
     if (desiredUser === null) {
-      throw new Error(`Гser with id: ${id} not found`);
+      throw new Error(userNotFoundMessage);
     }
-    const { age, login, password } = userData;
+    const { age, login, password, groups = [] } = userData;
     if (age !== undefined) {
       desiredUser.age = age;
     }
@@ -91,27 +97,37 @@ class UserRepository {
       desiredUser.password = password;
     }
     const savedUser = await desiredUser.save();
-    return this.userMapper.toDto(savedUser);
+    if (groups.length > 0) {
+      const groupRepository = new GroupRepository(GroupModel);
+      const group = await groupRepository.findById(groups[0]);
+      if (group === null) {
+        console.log('group not found');
+        return savedUser;
+      }
+      console.log(groups[0]);
+      await savedUser.addGroup(group);
+    }
+    return savedUser;
   }
 
   public async delete(id: string): Promise<string> {
     this.validateId(id);
     const desiredUser = await this.UserModel.findOne({
-      where: { user_id: id },
+      where: { uuid: id },
     });
     if (desiredUser === null || desiredUser.isDeleted === true) {
-      throw new Error('User not found');
+      this.throwError(userNotFoundMessage);
     }
     await desiredUser.update({ isDeleted: true });
 
-    return desiredUser.user_id;
+    return desiredUser.uuid;
   }
 
   public async getAutoSuggestUsers(
     limit = 10,
     substring: string | undefined,
     findDeleted = false
-  ): Promise<UserDto[]> {
+  ): Promise<UserModel[]> {
     if (limit <= 0) {
       return [];
     }
@@ -127,13 +143,7 @@ class UserRepository {
       limit,
     });
 
-    return users.map((user) => this.userMapper.toDto(user));
-  }
-
-  private validateId(id: ValueOf<UserDto>): void {
-    if (typeof id !== 'string' || !validate(id)) {
-      throw new Error(`id ${id} not valid`);
-    }
+    return users;
   }
 
   private async isLoginDuplicate(login: string): Promise<boolean> {

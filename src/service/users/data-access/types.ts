@@ -1,12 +1,8 @@
 import { Optional } from 'sequelize/types';
+import { UserDto } from '../types';
 
-export interface UserAttributes {
+export interface UserAttributes extends UserDto {
   id: number;
-  user_id: string;
-  login: string;
-  password: string;
-  age: number;
-  isDeleted: boolean;
 }
 
 export type IUpdateUser = Pick<UserAttributes, 'age' | 'login' | 'password'>;

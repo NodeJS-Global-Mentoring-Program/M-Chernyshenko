@@ -1,0 +1,1 @@
+export { configureDB } from './utils';

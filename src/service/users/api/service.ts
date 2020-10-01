@@ -1,14 +1,40 @@
 import { Request, Response, NextFunction } from 'express';
-import { UserRepository, SequelizeUserModel, UserMapper } from '../data-access';
+import { ApiMiddleware } from '../../types';
+import { ApiResponse } from '../../utils/ApiResponse';
+import { UserRepository, UserModel, UserMapper } from '../data-access';
+import { UserDto } from '../types';
 import { User } from '../User';
 
-const userRepository = new UserRepository(SequelizeUserModel, new UserMapper());
+const userRepository = new UserRepository(UserModel);
+const userMapper = new UserMapper();
 
-export const deleteUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const id = req.query.id as string;
+export const getUser: ApiMiddleware<any, any, { id: string }> = async (
+  req,
+  res,
+  next
+) => {
+  const { id } = req.params;
+  const user = await userRepository.findById(id);
+  if (user === null) {
+    res
+      .status(400)
+      .json(new ApiResponse({ errors: [new Error('user not found')] }));
+    return;
+  }
+  res.json(
+    new ApiResponse({
+      data: {
+        user: userMapper.toDto(user),
+      },
+    })
+  );
+};
+
+export const deleteUser: ApiMiddleware<any, any, { id: string }> = async (
+  req,
+  res
+) => {
+  const { id } = req.params;
   try {
     await userRepository.delete(id);
     res.status(204);
@@ -36,51 +62,50 @@ export const getUsers = async (
     _loginSubstring,
     _findDeleted
   );
-  res.json({
-    users: suggestedUsers,
+  const { result } = new ApiResponse({
+    data: { users: suggestedUsers.map((user) => userMapper.toDto(user)) },
   });
+  res.json(result);
 };
 
-interface UpdateUserRequest extends Request {
-  body: {
-    id: string;
-    login?: string;
-    age?: number;
-    password?: string;
-  };
-}
+type UpdateUserRequest = { id: string } & Partial<
+  Pick<UserDto, 'login' | 'age' | 'groups' | 'password'>
+>;
 
-export const updateUser = async (
-  req: UpdateUserRequest,
-  res: Response
-): Promise<void> => {
-  const { age, login, password, id } = req.body;
+export const updateUser: ApiMiddleware<UpdateUserRequest> = async (
+  req,
+  res
+) => {
+  const { age, login, password, id, groups } = req.body;
   try {
     const desiredUser = await userRepository.update(id, {
       age,
       login,
       password,
+      groups,
     });
-    res.status(200).json({ user: desiredUser });
+    res
+      .status(200)
+      .json(
+        new ApiResponse({ data: { user: userMapper.toDto(desiredUser) } })
+          .result
+      );
   } catch (e) {
-    res.status(400).json({ error: e });
+    console.log(e);
+    res.status(400).json(new ApiResponse({ errors: [e] }).result);
   }
 };
 
-interface CreateUserRequest extends Request {
-  body: {
-    login: string;
-    age: number;
-    password: string;
-  };
+interface CreateUserBody {
+  login: string;
+  age: number;
+  password: string;
+  groups?: string[];
 }
 
-export const createUser = async (
-  req: CreateUserRequest,
-  res: Response
-): Promise<void> => {
-  const { age, login, password } = req.body;
-  const user = new User({ login, password, age });
-  const newUser = await userRepository.create(user.toEntity());
-  res.json({ user: newUser });
+export const createUser: ApiMiddleware<CreateUserBody> = async (req, res) => {
+  const { age, login, password, groups } = req.body;
+  const user = new User({ login, password, age, groups });
+  const newUser = await userRepository.create(user.toJson());
+  res.json(new ApiResponse({ data: { user: userMapper.toDto(newUser) } }));
 };

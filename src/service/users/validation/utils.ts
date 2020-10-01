@@ -22,15 +22,7 @@ export const ajvUserSchema = {
     minLength: 8,
     validateString: {
       errorMessage: 'password must contain at least one digit and one letter',
-      func: validatePassword,
+      cb: validatePassword,
     },
-  },
-};
-
-export const ajvValidateId = {
-  type: 'string',
-  validateString: {
-    errorMessage: 'id not valid',
-    func: (id: string): boolean => uuidValidate(id),
   },
 };

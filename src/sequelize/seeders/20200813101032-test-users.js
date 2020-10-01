@@ -17,7 +17,7 @@ const generateFakeUser = () => {
     password,
     age,
     isDeleted: false,
-    user_id: v4(),
+    uuid: v4(),
     createdAt: now,
     updatedAt: now,
   };

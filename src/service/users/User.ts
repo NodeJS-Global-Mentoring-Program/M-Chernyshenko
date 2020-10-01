@@ -1,12 +1,14 @@
 import { v4 } from 'uuid';
 import { UserDto } from './types';
 
-type UserDataForCreate = Required<Pick<UserDto, 'age' | 'login' | 'password'>>;
+type UserDataForCreate = Required<Pick<UserDto, 'age' | 'login' | 'password'>> &
+  Pick<UserDto, 'groups'>;
 
 class User implements UserDto {
   private _age: number;
   private _login: string;
   private _password: string;
+  private _groups: string[];
   private _isDeleted = false;
   private _userId = v4();
 
@@ -14,9 +16,10 @@ class User implements UserDto {
     this._age = userData.age;
     this._login = userData.login;
     this._password = userData.password;
+    this._groups = userData.groups ?? [];
   }
 
-  public get user_id(): string {
+  public get uuid(): string {
     return this._userId;
   }
 
@@ -48,13 +51,14 @@ class User implements UserDto {
     this._age = age;
   }
 
-  public toEntity(): Required<UserDto> {
+  public toJson(): Required<UserDto> {
     return {
       age: this._age,
       isDeleted: this._isDeleted,
       login: this._login,
-      user_id: this._userId,
+      uuid: this._userId,
       password: this._password,
+      groups: this._groups,
     };
   }
 }

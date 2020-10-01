@@ -1,20 +1,20 @@
-import { Router } from 'express';
 import {
   getUsersValidation,
   postUserValidation,
   patchUserValidation,
   deleteUserValidation,
+  getUserValidation,
 } from '../validation';
-import { getUsers, createUser, updateUser, deleteUser } from '../api';
-import { handleMiddlewares } from '../../../utils/routes';
+import { getUsers, createUser, updateUser, deleteUser, getUser } from '../api';
+import { Controller } from '../../Controller';
+import { checkIdInParams } from '../../utils/routes';
 
-const router = Router();
-
-router
-  .route('/')
-  .get(handleMiddlewares([getUsersValidation, getUsers]))
-  .post(handleMiddlewares([postUserValidation, createUser]))
-  .patch(handleMiddlewares([patchUserValidation, updateUser]))
-  .delete(handleMiddlewares([deleteUserValidation, deleteUser]));
-
-export { router as userRouter };
+export const userRouter = new Controller()
+  .setPath('/:id')
+  .get([checkIdInParams, getUserValidation, getUser])
+  .delete([deleteUserValidation, deleteUser])
+  .setPath('/')
+  .get([getUsersValidation, getUsers])
+  .post([postUserValidation, createUser])
+  .patch([patchUserValidation, updateUser])
+  .getRouter();

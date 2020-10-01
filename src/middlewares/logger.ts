@@ -1,6 +1,6 @@
 import winston from 'winston';
 import expressWinston, { LoggerOptions } from 'express-winston';
-import { Handler } from 'express';
+import { Handler, Request } from 'express';
 
 type Options = LoggerOptions;
 
@@ -15,21 +15,54 @@ const logLevels = {
   debug: 7,
 };
 
-const createLogger = (options?: Options): Handler =>
+const msgFormatter = (req: Request): string => {
+  const { body, query, params } = req;
+  const notEmpty = (obj: Record<string, unknown>) =>
+    Object.keys(obj).length > 0;
+  const formatParams = (type: string, ojb: Record<string, string>) => {
+    const arr = Object.keys(ojb).map((key) => `${key}: ${body[key]}`);
+    return `${type}: {${arr.join(', ')}}`;
+  };
+  const paramExist = (param: Record<string, unknown>) =>
+    typeof param === 'object' && notEmpty(param);
+  if (paramExist(body)) {
+    return formatParams('Body', body);
+  }
+  if (paramExist(query)) {
+    return formatParams('Query', query as Record<string, string>);
+  }
+  if (paramExist(params)) {
+    return formatParams('Params', params);
+  }
+
+  return '';
+};
+
+const createExpressLogger = (options?: Options): Handler =>
   expressWinston.logger({
     transports: [new winston.transports.Console()],
-    format: winston.format.combine(winston.format.json()),
-    meta: false,
+    format: winston.format.combine(
+      winston.format.json(),
+      winston.format.colorize()
+    ),
+    msg: msgFormatter,
     expressFormat: true,
+    meta: false,
     ...options,
   });
 
 class Logger {
-  private _logger: Handler;
+  private _expressLogger: Handler;
   private _level: keyof typeof logLevels = 'warning';
+  private _winston: typeof winston;
+  private _logger: winston.Logger;
 
   constructor(options?: Options) {
-    this._logger = createLogger(options);
+    this._expressLogger = createExpressLogger(options);
+    this._winston = winston;
+    this._logger = this._winston.createLogger({
+      transports: [new this._winston.transports.Console()],
+    });
   }
 
   public get level(): keyof typeof logLevels {
@@ -40,14 +73,44 @@ class Logger {
     this._level = level;
   }
 
-  public get logger(): Handler {
-    return this._logger;
+  public getExpressLogger(): Handler {
+    return this._expressLogger;
   }
 
   public log(message: string): void {
-    console.log(message);
+    this._logger.log(this._level, message);
+  }
+
+  public error(message: string): void {
+    this._logger.error(message);
+  }
+
+  public warn(message: string): void {
+    this._logger.warn(message);
+  }
+
+  public info(message: string): void {
+    this._logger.info(message);
   }
 }
 
-const logger = new Logger();
-export { logger };
+export class LoggerFactory {
+  private static loggers: Record<string, Logger> = {};
+
+  private constructor() {}
+
+  public static getLogger(name: string, options?: Options): Logger {
+    if (this.loggers[name] === undefined) {
+      this.createLogger(name, options);
+    }
+    return this.loggers[name];
+  }
+
+  public static deleteLogger(name: string): void {
+    delete this.loggers[name];
+  }
+
+  private static createLogger(name: string, options?: Options): void {
+    this.loggers[name] = new Logger(options);
+  }
+}

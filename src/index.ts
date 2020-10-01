@@ -1,6 +1,12 @@
 import { config } from 'dotenv';
 
-import { bootstrap } from './app';
+import { App } from './App';
+import { LoggerFactory } from './middlewares/logger';
 
 config();
-bootstrap();
+new App()
+  .init()
+  .then((app) => {
+    app.listen();
+  })
+  .catch(LoggerFactory.getLogger('app').error);

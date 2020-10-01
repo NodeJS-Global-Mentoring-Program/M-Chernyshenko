@@ -1,7 +1,8 @@
 export interface UserDto {
-  user_id: string;
+  uuid: string;
   login: string;
   age: number;
-  isDeleted: boolean;
+  isDeleted?: boolean;
   password?: string;
+  groups?: string[];
 }

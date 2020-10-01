@@ -1,18 +1,33 @@
 import express from 'express';
 
-import { applySeeds, applyMigrations } from './sequelize/utils';
 import { applyMiddlewares } from './middlewares/applyMiddlewares';
-import { initModels } from './config/database/initModels';
+import { configureDB } from './sequelize';
 
-const port = process.env.PORT || 3000;
+export class App {
+  private port = process.env.PORT ?? 3000;
+  private app;
 
-export const bootstrap = async (): Promise<void> => {
-  const app = express();
-  applyMiddlewares(app);
-  initModels();
-  // await applyMigrations();
-  await applySeeds();
-  app.listen(port, () => {
-    console.log(`Server listen on http://localhost:${port}`);
-  });
-};
+  constructor() {
+    this.app = express();
+  }
+
+  public async init(): Promise<this> {
+    applyMiddlewares(this.app);
+    await configureDB();
+    return this;
+  }
+
+  public listen(cb?: () => void): void {
+    const defaultCb = () => {
+      console.log(`Server listen on http://localhost:${this.port}`);
+    };
+    this.app.listen(this.port, cb ?? defaultCb);
+    process.on('uncaughtException', (err) => {
+      if (err) {
+        console.error('uncaughtException');
+        console.error(err.message);
+        process.exit(1);
+      }
+    });
+  }
+}

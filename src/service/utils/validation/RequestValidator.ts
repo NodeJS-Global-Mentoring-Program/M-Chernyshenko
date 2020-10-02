@@ -5,7 +5,7 @@ import { ApiMiddleware } from '../../types';
 import { ApiResponse } from '../ApiResponse';
 import { formatErrors } from '../routes';
 import { validateString } from './keywords';
-import { IAjvKeyword } from './types';
+import { IAjvKeyword, IAjvSchema } from './types';
 
 type RequestPayloadType = 'body' | 'query' | 'params';
 
@@ -42,7 +42,7 @@ export class RequestValidator {
   }
 
   public createRequestValidator<Body extends UnknownRecord>(
-    schema: any,
+    schema: IAjvSchema,
     requestPayloadType: RequestPayloadType = REQUEST_PAYLOAD_TYPE.body
   ): ApiMiddleware<Body> {
     const ajvValidate = this.ajv.compile(schema);

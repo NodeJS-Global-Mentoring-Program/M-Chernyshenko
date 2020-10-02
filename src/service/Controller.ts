@@ -1,6 +1,7 @@
 import { Router, RouterOptions } from 'express';
 import { ApiMiddleware } from './types';
 import { ApiError } from './utils/ApiError';
+import { checkToken } from './utils/routes/checkToken';
 
 type IMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
@@ -15,6 +16,22 @@ export const HTTP_METHOD: { [P in IMethod]: P } = {
 type AnyMiddleware = ApiMiddleware<any, any, any>;
 type PathMiddlewares = Record<IMethod, AnyMiddleware[]>;
 type Middlewares = Record<string, PathMiddlewares>;
+
+interface HttpMethodOptions {
+  auth?: boolean;
+}
+
+interface IController {
+  get(middlewares: AnyMiddleware[], options?: HttpMethodOptions): this;
+  post(middlewares: AnyMiddleware[], options?: HttpMethodOptions): this;
+  patch(middlewares: AnyMiddleware[], options?: HttpMethodOptions): this;
+  delete(middlewares: AnyMiddleware[], options?: HttpMethodOptions): this;
+  getRouter(): Router;
+}
+
+const defaultOptions: HttpMethodOptions = {
+  auth: true,
+};
 
 const handleMiddlewares = (middlewares: AnyMiddleware[]): AnyMiddleware[] => {
   const resFunctions: AnyMiddleware[] = middlewares.map((middleware) => {
@@ -38,7 +55,7 @@ const getDefaultMiddlewares = (): PathMiddlewares => ({
   [HTTP_METHOD.DELETE]: [],
 });
 
-export class Controller {
+export class Controller implements IController {
   private _router;
   private _path = '/';
 
@@ -84,24 +101,30 @@ export class Controller {
     return this;
   }
 
-  public get(middlewares: AnyMiddleware[]): this {
-    this.addMiddlewares(HTTP_METHOD.GET, middlewares);
+  public get(middlewares: AnyMiddleware[], options?: HttpMethodOptions): this {
+    this.addMiddlewares(HTTP_METHOD.GET, middlewares, options);
     return this;
   }
-  public post(middlewares: AnyMiddleware[]): this {
-    this.addMiddlewares(HTTP_METHOD.POST, middlewares);
+  public post(middlewares: AnyMiddleware[], options?: HttpMethodOptions): this {
+    this.addMiddlewares(HTTP_METHOD.POST, middlewares, options);
     return this;
   }
-  public patch(middlewares: AnyMiddleware[]): this {
-    this.addMiddlewares(HTTP_METHOD.PATCH, middlewares);
+  public patch(
+    middlewares: AnyMiddleware[],
+    options?: HttpMethodOptions
+  ): this {
+    this.addMiddlewares(HTTP_METHOD.PATCH, middlewares, options);
     return this;
   }
-  public put(middlewares: AnyMiddleware[]): this {
-    this.addMiddlewares(HTTP_METHOD.PUT, middlewares);
+  public put(middlewares: AnyMiddleware[], options?: HttpMethodOptions): this {
+    this.addMiddlewares(HTTP_METHOD.PUT, middlewares, options);
     return this;
   }
-  public delete(middlewares: AnyMiddleware[]): this {
-    this.addMiddlewares(HTTP_METHOD.DELETE, middlewares);
+  public delete(
+    middlewares: AnyMiddleware[],
+    options?: HttpMethodOptions
+  ): this {
+    this.addMiddlewares(HTTP_METHOD.DELETE, middlewares, options);
     return this;
   }
 
@@ -113,12 +136,19 @@ export class Controller {
 
   protected addMiddlewares(
     method: IMethod,
-    middlewares: AnyMiddleware[]
+    middlewares: AnyMiddleware[],
+    options: HttpMethodOptions = defaultOptions
   ): void {
     this.initRouteMiddlewares();
 
+    const { auth = true } = options;
+
+    const routeMiddlewares = this._middlewares[this._path][method];
     middlewares.forEach((middleware) => {
-      this._middlewares[this._path][method].push(middleware);
+      if (auth === true) {
+        routeMiddlewares.push(checkToken);
+      }
+      routeMiddlewares.push(middleware);
     });
   }
 }

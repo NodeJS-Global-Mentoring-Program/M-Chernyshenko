@@ -51,11 +51,12 @@ class UserRepository extends BaseRepository<UserModel> {
       },
     });
 
-    if (desiredUser === null) {
-      return null;
-    }
-
     return desiredUser;
+  }
+
+  public async findByEmail(email: string): Promise<UserDto | null> {
+    const user = await this.UserModel.findOne({ where: { login: email } });
+    return user;
   }
 
   public async findBy<K extends keyof UserDto>(
@@ -144,6 +145,19 @@ class UserRepository extends BaseRepository<UserModel> {
     });
 
     return users;
+  }
+
+  public async verifyPassword(
+    uuid: string,
+    password: string
+  ): Promise<boolean> {
+    const user = await this.findBy('uuid', uuid);
+
+    if (user === null) {
+      return false;
+    }
+
+    return user[0].password === password;
   }
 
   private async isLoginDuplicate(login: string): Promise<boolean> {

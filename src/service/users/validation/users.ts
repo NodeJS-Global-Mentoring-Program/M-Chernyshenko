@@ -5,6 +5,7 @@ import {
 } from '../../utils/validation/RequestValidator';
 import { ApiMiddleware } from '../../types';
 import { uuidValidateSchema } from '../../utils/validation/schema';
+import { IAjvSchema } from '../../utils/validation/types';
 
 const validator = new RequestValidator();
 
@@ -21,7 +22,7 @@ export const deleteUserValidation = validator.createRequestValidator(
   REQUEST_PAYLOAD_TYPE.params
 );
 
-const createUserSchema = {
+const createUserSchema: IAjvSchema = {
   type: 'object',
   required: ['age', 'login', 'password'],
   properties: ajvUserSchema,
@@ -31,7 +32,7 @@ export const postUserValidation = validator.createRequestValidator(
   createUserSchema
 );
 
-const updateUserSchema = {
+const updateUserSchema: IAjvSchema = {
   type: 'object',
   required: ['id'],
   properties: {

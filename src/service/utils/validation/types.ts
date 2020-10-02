@@ -7,6 +7,12 @@ export interface IAjvKeyword {
 
 type IAjvSchemaType = 'object' | 'string' | 'number' | 'array' | 'integer' | 'boolean';
 
+interface IntegerProperies {
+  type: 'integer';
+  minimum?: number;
+  maximum?: number;
+}
+
 export interface IAjvSchema {
   type?: IAjvSchemaType;
   required?: string[];

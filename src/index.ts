@@ -9,4 +9,6 @@ new App()
   .then((app) => {
     app.listen();
   })
-  .catch(LoggerFactory.getLogger('app').error);
+  .catch((error) => {
+    LoggerFactory.getLogger('app').error(error);
+  });

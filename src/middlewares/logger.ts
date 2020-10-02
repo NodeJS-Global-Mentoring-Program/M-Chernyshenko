@@ -77,12 +77,12 @@ class Logger {
     return this._expressLogger;
   }
 
-  public log(message: string): void {
-    this._logger.log(this._level, message);
+  public log(error: any): void {
+    this._logger.log(this._level, error);
   }
 
-  public error(message: string): void {
-    this._logger.error(message);
+  public error(error: any): void {
+    this._logger.error(error);
   }
 
   public warn(message: string): void {

@@ -25,4 +25,4 @@ export const ajvUserSchema = {
       cb: validatePassword,
     },
   },
-};
+} as const;

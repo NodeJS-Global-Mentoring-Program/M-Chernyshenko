@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { ApiMiddleware } from '../../../types';
-import { ApiResponse } from '../../ApiResponse';
 import {
   getPayload,
   RequestValidator,
@@ -43,38 +42,24 @@ describe('RequestValidator spec', () => {
     expect(typeof requestValidateMiddleware === 'function').toBe(true);
   });
 
-  test('should return middleware that stop middlewares chain if validation failed', () => {
+  test('should call "next" with errors if validation failed', () => {
     const validator = new RequestValidator();
     const requestValidateMiddleware: ApiMiddleware = validator.createRequestValidator(
       {},
       REQUEST_PAYLOAD_TYPE.body
     );
 
-    const apiResponse = new ApiResponse({ errors: [] });
-
     const req: Request = { body: { isValid: false } } as Request;
-    const next: NextFunction = jest.fn();
-    const json = jest.fn() as any;
+    const next = jest.fn();
 
-    const status = jest.fn<Response, any[]>(
-      () =>
-        ({
-          json,
-        } as Response)
-    );
     const res: Response = {} as Response;
-    res.status = status;
 
     expect(typeof requestValidateMiddleware === 'function').toBe(true);
     requestValidateMiddleware(req, res, next);
 
-    expect(status).toHaveBeenCalledTimes(1);
-    expect(status).toHaveBeenCalledWith(400);
-
-    expect(json).toHaveBeenCalledTimes(1);
-    expect(json).toHaveBeenCalledWith(apiResponse);
-
-    expect(next).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next.mock.calls[0][0]).toHaveLength(0);
+    expect(next).toHaveBeenCalledWith([]);
   });
 
   test('should return middleware that call "next" if validation passed', () => {

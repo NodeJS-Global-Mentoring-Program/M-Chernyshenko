@@ -5,11 +5,13 @@ interface Params {
 
 export class ApiError extends Error {
   public code: number;
-  public message: string;
 
   public constructor(params: Params) {
     super(params.message);
     this.code = params.code ?? 500;
-    this.message = params.message ?? '';
+  }
+
+  public getCode(): number {
+    return this.code;
   }
 }

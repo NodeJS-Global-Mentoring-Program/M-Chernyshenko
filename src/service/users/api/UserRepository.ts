@@ -1,11 +1,11 @@
 import { Op } from 'sequelize';
 import crypto from 'crypto';
 
-import { UserModel } from './UserModel';
 import { UserDto } from '../types';
 import { BaseRepository } from '../../BaseRepository';
 import { GroupRepository } from '../../Groups/api/GroupRepository';
 import { GroupModel } from '../../Groups/data-access';
+import { UserModel } from '../data-access';
 
 const userNotFoundMessage = 'User not found';
 
@@ -16,7 +16,7 @@ type CreateUserData = Required<
 > &
   Partial<Pick<UserDto, 'groups'>>;
 
-class UserRepository extends BaseRepository<UserModel> {
+export class UserRepository extends BaseRepository<UserModel> {
   private UserModel: typeof UserModel;
 
   constructor(userModel: typeof UserModel) {
@@ -25,14 +25,13 @@ class UserRepository extends BaseRepository<UserModel> {
   }
 
   public async create(user: CreateUserData): Promise<UserModel> {
-    if (this.isLoginDuplicate(user.login)) {
+    if (await this.isLoginDuplicate(user.login)) {
       this.throwError('User already exist');
     }
     const encryptedPassword = crypto
       .createHmac('sha512', 'someSalt')
       .update(user.password)
       .digest('hex');
-    console.log(encryptedPassword);
     const createdUser = await this.UserModel.create({
       ...user,
       password: encryptedPassword,
@@ -165,5 +164,3 @@ class UserRepository extends BaseRepository<UserModel> {
     return user !== null;
   }
 }
-
-export { UserRepository };

@@ -5,7 +5,13 @@ import {
   deleteUserValidation,
   getUserValidation,
 } from '../validation';
-import { getUsers, createUser, updateUser, deleteUser, getUser } from '../api';
+import {
+  getUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  getUser,
+} from './service';
 import { Controller } from '../../Controller';
 import { checkIdInParams } from '../../utils/routes';
 

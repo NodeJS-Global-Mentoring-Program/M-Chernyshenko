@@ -15,17 +15,26 @@ export const REQUEST_PAYLOAD_TYPE: { [P in RequestPayloadType]: P } = {
   query: 'query',
 };
 
-const getPayload = (
+export const getPayload = (
   req: Request,
-  requestPayloadtype: RequestPayloadType
+  requestPayloadType: RequestPayloadType
 ): any => {
-  if (requestPayloadtype === REQUEST_PAYLOAD_TYPE.body) {
-    return req.body;
+  switch (requestPayloadType) {
+    case REQUEST_PAYLOAD_TYPE.body: {
+      return req.body;
+    }
+    case REQUEST_PAYLOAD_TYPE.params: {
+      return req.params;
+    }
+    case REQUEST_PAYLOAD_TYPE.query: {
+      return req.query;
+    }
+
+    default: {
+      const neverRequestPayloadType: never = requestPayloadType;
+      throw new Error('unknown payload type');
+    }
   }
-  if (requestPayloadtype === REQUEST_PAYLOAD_TYPE.params) {
-    return req.params;
-  }
-  return req.query;
 };
 
 export class RequestValidator {
@@ -52,8 +61,7 @@ export class RequestValidator {
       const isValid = ajvValidate(payload);
       if (isValid === false) {
         const errors = formatErrors(ajvValidate.errors);
-        res.status(400).json(new ApiResponse({ errors }));
-        return;
+        return next(errors);
       }
       next();
     };

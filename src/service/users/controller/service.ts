@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
 import { ApiMiddleware } from '../../types';
+import { ApiError } from '../../utils/ApiError';
 import { ApiResponse } from '../../utils/ApiResponse';
-import { UserRepository, UserModel, UserMapper } from '../data-access';
+import { UserMapper, UserRepository } from '../api';
+import { UserModel } from '../data-access';
 import { UserDto } from '../types';
 import { User } from '../User';
 
@@ -16,10 +17,7 @@ export const getUser: ApiMiddleware<any, any, { id: string }> = async (
   const { id } = req.params;
   const user = await userRepository.findById(id);
   if (user === null) {
-    res
-      .status(400)
-      .json(new ApiResponse({ errors: [new Error('user not found')] }));
-    return;
+    return next(new ApiError({ code: 400, message: 'user not found' }));
   }
   res.json(
     new ApiResponse({
@@ -44,10 +42,10 @@ export const deleteUser: ApiMiddleware<any, any, { id: string }> = async (
   res.send();
 };
 
-export const getUsers = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+export const getUsers: ApiMiddleware<unknown, { limit: string, loginSubstring: string, findDeleted: boolean }> = async (
+  req,
+  res,
+  next
 ): Promise<void> => {
   const { limit, loginSubstring, findDeleted } = req.query;
   const _limit =
@@ -74,7 +72,8 @@ type UpdateUserRequest = { id: string } & Partial<
 
 export const updateUser: ApiMiddleware<UpdateUserRequest> = async (
   req,
-  res
+  res,
+  next
 ) => {
   const { age, login, password, id, groups } = req.body;
   try {
@@ -91,8 +90,7 @@ export const updateUser: ApiMiddleware<UpdateUserRequest> = async (
           .result
       );
   } catch (e) {
-    console.log(e);
-    res.status(400).json(new ApiResponse({ errors: [e] }).result);
+    return next(new ApiError({ code: 400, message: e }));
   }
 };
 

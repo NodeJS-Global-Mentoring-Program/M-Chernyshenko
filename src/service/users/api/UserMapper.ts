@@ -1,8 +1,8 @@
 import { IBaseMapper } from '../../types';
 import { UserDto } from '../types';
-import { UserModel } from './UserModel';
+import { UserModel } from '../data-access/UserModel';
 
-class UserMapper implements IBaseMapper<UserDto, UserModel> {
+export class UserMapper implements IBaseMapper<UserDto, UserModel> {
   toEntity(dto: Required<UserDto>): UserModel {
     const { age, isDeleted, login, uuid: user_id, password } = dto;
     const entity = new UserModel({
@@ -19,5 +19,3 @@ class UserMapper implements IBaseMapper<UserDto, UserModel> {
     return { age, isDeleted, login, uuid: user_id };
   }
 }
-
-export { UserMapper };
